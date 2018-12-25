@@ -197,7 +197,6 @@ import star from '@/components/common/star/star'
         left 0
         width 100%
         height 100%rgba(7,17,27,0.8)
-
         z-index -1
         filter blur(10px)
     .fade-enter-active,.fade-leave-active

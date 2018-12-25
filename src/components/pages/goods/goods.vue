@@ -12,7 +12,7 @@
                 <li v-for="(item,index) in goods" :key="index" class="food-list" ref="foodlist">
                     <h1 class="title">{{item.name}} </h1>
                     <ul class="content-wrapper">
-                        <li class="food-item" v-for="(it,index0) in item.foods" :key="index0">
+                        <li @click="selectFood(it,$event)" class="food-item" v-for="(it,index0) in item.foods" :key="index0">
                            <div class="icon">
                                <img :src="it.icon" width="57" height="57" alt="">
                            </div>
@@ -27,13 +27,17 @@
                                     <span>￥{{it.price}}</span>
                                     <span class="oldPrice" v-show="it.oldPrice">￥{{it.oldPrice}}</span>
                                 </div>
+                                <div class="cart-wrapper">
+                                    <cart-control @cartadd="drop" :food="it"></cart-control>
+                                </div>
                            </div> 
                         </li>
                     </ul>
                 </li>
             </ul>
         </div>
-        <shop-cart :seller="seller"></shop-cart>
+        <shop-cart ref="shopcart" :selectFoods="selectFoods" :seller="seller"></shop-cart>
+        <single-food @hide="hide" :showFlag="showFlag" :food="selectedFood"></single-food>
     </div>
 </template>
 
@@ -41,12 +45,16 @@
     import BScroll from 'better-scroll'
     import axios from 'axios'
     import shopCart from '@/components/pages/shopcart/shopcart'
+    import singleFood from '@/components/pages/food/food'
+    import cartControl from '@/components/common/cartcontrol/cartcontrol'
     export default {    
        data(){
            return{
                goods:[],
                listHeight:[],
-               scrollY:0
+               scrollY:0,
+               selectedFood:{},
+               showFlag:false
            }
        }  ,
        props:{
@@ -58,7 +66,9 @@
            this.getGoodsInfo()
        },
        components:{
-           shopCart
+           shopCart,
+           cartControl,
+           singleFood
        },
        methods:{
            _initScroll(){
@@ -108,6 +118,16 @@
                let el=foodList[index]
                this.foodsScroll.scrollToElement(el,300)
             
+           },
+           drop(el){
+                this.$refs.shopcart.drop(el);
+           },
+           selectFood(food,event){
+                this.selectedFood=food
+                this.showFlag=true
+           },
+           hide(){
+               this.showFlag=false
            }
        },
        computed:{
@@ -123,6 +143,20 @@
                     }
                }
                return 0
+           },
+           selectFoods(){
+               let foods=[]
+               this.goods.forEach((good)=>{
+                   good.foods.forEach((food)=>{
+                       if (food.count) {  
+                           //在每个商品中增加了count属性
+                           //把改变了的商品推入新数组
+                           foods.push(food)
+                       }
+                   })
+               })
+               //console.log(foods)
+               return foods
            }
        }
     }
@@ -207,4 +241,9 @@
                                 font-size 10px
                                 line-height 14px
                                 color rgb(147,153,159)
+                        .cart-wrapper
+                            position absolute
+                            right 0
+                            bottom  8px
+
 </style>
